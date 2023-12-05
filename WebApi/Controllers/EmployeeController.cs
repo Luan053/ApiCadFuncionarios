@@ -51,6 +51,8 @@ namespace WebApi.Controllers
         {
             _logger.Log(LogLevel.Error, "Ocorreu um Erro");
 
+            //throw new Exception("Erro Teste");
+
             var employees = _employeeRepository.Get(pageNumber, pageQuantity);
 
             _logger.LogInformation("Teste");
