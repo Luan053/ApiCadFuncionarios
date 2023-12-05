@@ -12,10 +12,12 @@ namespace WebApi.Controllers
     {
 
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly ILogger<EmployeeController> _logger;
 
-        public EmployeeController(IEmployeeRepository employeeRepository)
+        public EmployeeController(IEmployeeRepository employeeRepository, ILogger<EmployeeController> logger)
         {
             _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [Authorize]
@@ -43,11 +45,16 @@ namespace WebApi.Controllers
             return File(dataBytes, "image/png");
         }
 
-        [Authorize]
+        
         [HttpGet]
-        public IActionResult Get() 
+        public IActionResult Get(int pageNumber, int pageQuantity) 
         {
-            var employees = _employeeRepository.Get();
+            _logger.Log(LogLevel.Error, "Ocorreu um Erro");
+
+            var employees = _employeeRepository.Get(pageNumber, pageQuantity);
+
+            _logger.LogInformation("Teste");
+
             return Ok(employees);
         }
     }
