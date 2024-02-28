@@ -16,7 +16,6 @@ namespace WebApi
                 byte[] keyBytes = new byte[keySizeInBytes];
                 rng.GetBytes(keyBytes);
 
-                // Converte os bytes para uma string hexadecimal
                 return BitConverter.ToString(keyBytes).Replace("-", string.Empty).ToLower();
             }
         }

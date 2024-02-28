@@ -45,7 +45,7 @@ namespace WebApi.Controllers
             return File(dataBytes, "image/png");
         }
 
-        
+        [Authorize]
         [HttpGet]
         public IActionResult Get(int pageNumber, int pageQuantity) 
         {
