@@ -12,7 +12,7 @@ namespace WebApi.Controllers
         {
             if (username == "admin" && password == "admin123")
             {
-                var token = TokenService.GenerateToken(new Domain.Model.Employee("employeeTest", 99, ""));
+                var token = TokenService.GenerateToken(new Domain.Model.Employee("employeeTest", 99, "", ""));
                 return Ok(token);
             }
 

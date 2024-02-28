@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+WebApi/Storage/*.png
+WebApi/Storage/*.jpg
+WebApi/Storage/*.jpeg
+WebApi/Storage/*.svg

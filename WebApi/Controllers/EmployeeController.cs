@@ -28,7 +28,7 @@ namespace WebApi.Controllers
             using Stream fileStream = new FileStream(filePath, FileMode.Create);
             employeeView.Photo.CopyTo(fileStream);
 
-            var employee = new Employee(employeeView.Name, employeeView.Age, filePath);
+            var employee = new Employee(employeeView.Name, employeeView.Age, filePath, employeeView.Role);
             _employeeRepository.Add(employee);
 
             return Ok();
@@ -44,7 +44,7 @@ namespace WebApi.Controllers
 
             return File(dataBytes, "image/png");
         }
-
+        
         
         [HttpGet]
         public IActionResult Get(int pageNumber, int pageQuantity) 

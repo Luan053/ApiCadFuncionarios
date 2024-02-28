@@ -12,12 +12,14 @@ namespace WebApi.Domain.Model
         public string name { get; private set; }
         public int age { get; private set; }
         public string? photo { get; private set; }
+        public string? role { get; private set; }
 
-        public Employee(string name, int age, string photo)
+        public Employee(string name, int age, string photo, string role)
         {
             this.name = name ?? throw new ArgumentNullException(nameof(name));
             this.age = age;
             this.photo = photo;
+            this.role = role;
         }
 
 
