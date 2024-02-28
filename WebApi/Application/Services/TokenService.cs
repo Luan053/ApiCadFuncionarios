@@ -2,9 +2,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using WebApi.Model;
+using WebApi.Domain.Model;
 
-namespace WebApi.Services
+namespace WebApi.Application.Services
 {
     public class TokenService
     {
@@ -13,21 +13,21 @@ namespace WebApi.Services
             var key = Encoding.ASCII.GetBytes(Key.Secret);
             var tokenConfig = new SecurityTokenDescriptor
             {
-                Subject = new System.Security.Claims.ClaimsIdentity(new Claim[]
+                Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim("employeeId", employee.id.ToString()),
-                }), 
+                }),
                 Expires = DateTime.UtcNow.AddHours(3),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var token =  tokenHandler.CreateToken(tokenConfig);
+            var token = tokenHandler.CreateToken(tokenConfig);
             var tokenString = tokenHandler.WriteToken(token);
 
-            return new 
-            { 
-                token =  tokenString
+            return new
+            {
+                token = tokenString
             };
 
         }

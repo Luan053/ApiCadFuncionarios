@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Model;
-using WebApi.ViewModel;
+using WebApi.Application.ViewModel;
+using WebApi.Domain.Model;
 
 namespace WebApi.Controllers
 {
@@ -20,7 +20,7 @@ namespace WebApi.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [Authorize]
+        
         [HttpPost]
         public IActionResult Add([FromForm] EmployeeViewModel employeeView)
         {
@@ -28,7 +28,7 @@ namespace WebApi.Controllers
             using Stream fileStream = new FileStream(filePath, FileMode.Create);
             employeeView.Photo.CopyTo(fileStream);
 
-            var employee = new Employee(employeeView.Name,  employeeView.Age, filePath);
+            var employee = new Employee(employeeView.Name, employeeView.Age, filePath);
             _employeeRepository.Add(employee);
 
             return Ok();
@@ -45,17 +45,17 @@ namespace WebApi.Controllers
             return File(dataBytes, "image/png");
         }
 
-        [Authorize]
+        
         [HttpGet]
         public IActionResult Get(int pageNumber, int pageQuantity) 
         {
-            _logger.Log(LogLevel.Error, "Ocorreu um Erro");
+            //_logger.Log(LogLevel.Error, "Ocorreu um Erro");
 
             //throw new Exception("Erro Teste");
 
             var employees = _employeeRepository.Get(pageNumber, pageQuantity);
 
-            _logger.LogInformation("Teste");
+            //_logger.LogInformation("Passou pelo Get!");
 
             return Ok(employees);
         }
