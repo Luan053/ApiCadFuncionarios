@@ -7,6 +7,6 @@ namespace WebApi.Domain.Model
         void Add(Employee employee);
         List<EmployeeDTO> Get(int pageNumber, int pageQuantity);
         Employee? Get(int id);
-
+        void Delete(int id);
     }
 }

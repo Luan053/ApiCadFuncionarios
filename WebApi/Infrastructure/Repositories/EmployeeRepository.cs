@@ -31,5 +31,19 @@ namespace WebApi.Infrastructure.Repositories
         {
             return _context.Employees.Find(id);
         }
+
+        
+
+        public void Delete(int id)
+        {
+            var employeeToDelete = _context.Employees.FirstOrDefault(e => e.id == id);
+            if (employeeToDelete != null)
+            {
+                _context.Employees.Remove(employeeToDelete);
+                _context.SaveChanges();
+            }
+        }
+
+
     }
 }
