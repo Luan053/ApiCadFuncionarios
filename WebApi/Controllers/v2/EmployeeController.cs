@@ -1,15 +1,16 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Application.ViewModel;
 using WebApi.Domain.DTOs;
 using WebApi.Domain.Model.EmployeeAggregate;
 
-namespace WebApi.Controllers
+namespace WebApi.Controllers.v2
 {
-
+    [ApiVersion(2.0)]
     [ApiController]
-    [Route("api/v1/employee")]
+    [Route("api/v{version:apiVersion}/employee")]
     public class EmployeeController : ControllerBase
     {
 
