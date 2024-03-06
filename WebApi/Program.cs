@@ -21,6 +21,13 @@ builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(DomainToDTOMapping));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "MyPolicy", policy =>
+    {
+        policy.WithOrigins("http:localhost:3000").AllowAnyHeader().AllowAnyMethod();
+    });
+});
 builder.Services.AddApiVersioning().AddMvc().AddApiExplorer(setup =>
 {
     setup.GroupNameFormat = "'v'VVV";
@@ -104,6 +111,8 @@ else
     app.UseExceptionHandler("/error");
 
 }
+
+app.UseCors("MyPolicy");
 
 app.UseHttpsRedirection();
 
