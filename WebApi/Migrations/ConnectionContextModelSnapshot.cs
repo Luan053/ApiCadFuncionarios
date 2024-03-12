@@ -46,6 +46,9 @@ namespace WebApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("age")
                         .HasColumnType("integer");
 
@@ -61,7 +64,25 @@ namespace WebApi.Migrations
 
                     b.HasKey("id");
 
+                    b.HasIndex("CompanyId");
+
                     b.ToTable("employee");
+                });
+
+            modelBuilder.Entity("WebApi.Domain.Model.EmployeeAggregate.Employee", b =>
+                {
+                    b.HasOne("WebApi.Domain.Model.CompanyAggregate.Company", "Company")
+                        .WithMany("Employees")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("WebApi.Domain.Model.CompanyAggregate.Company", b =>
+                {
+                    b.Navigation("Employees");
                 });
 #pragma warning restore 612, 618
         }

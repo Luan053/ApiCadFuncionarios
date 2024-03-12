@@ -26,7 +26,8 @@ namespace WebApi.SwaggerConfig
         {
             var info = new OpenApiInfo()
             {
-                Title = "Web.API - Luan Schulz",
+                Title = "WebApi - Luan Schulz",
+                Description = "Api para gerenciamento de funcionários",
                 Version = description.ApiVersion.ToString()
             };
 
