@@ -23,7 +23,7 @@ API RESTful para gerenciamento de funcionários, desenvolvida com ASP.NET Core 7
 1. Clone o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/ApiCadFuncionarios.git
+git clone https://github.com/Luan053/ApiCadFuncionarios.git
 ```
 
 2. Configure o banco de dados no `appsettings.json`:
@@ -75,8 +75,7 @@ A API estará disponível em `https://localhost:5001` e `http://localhost:5000`
 
 A documentação completa está disponível através do Swagger UI em:
 
-- Desenvolvimento: `https://localhost:5001/swagger`
-- Produção: `{sua-url}/swagger`
+ `https://localhost:5001/swagger`
 
 ### Principais Endpoints
 
