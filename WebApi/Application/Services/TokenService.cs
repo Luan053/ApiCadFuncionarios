@@ -2,23 +2,39 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using WebApi.Domain.Model.EmployeeAggregate;
+using WebApi.Domain.Model.UserAggregate;
 
 namespace WebApi.Application.Services
 {
     public class TokenService
     {
-        public static object GenerateToken(Employee employee)
+        private readonly IConfiguration _configuration;
+
+        public TokenService(IConfiguration configuration)
         {
-            var key = Encoding.ASCII.GetBytes(Key.Secret);
+            _configuration = configuration;
+        }
+
+        public object GenerateToken(User user)
+        {
+            var secret = _configuration["JwtSettings:Secret"] 
+                ?? throw new InvalidOperationException("JWT Secret não configurado");
+            var expiresInHours = _configuration.GetValue<int>("JwtSettings:ExpiresInHours", 8);
+            
+            var key = Encoding.ASCII.GetBytes(secret);
+            
             var tokenConfig = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim("employeeId", employee.id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, user.Role ?? "User")
                 }),
-                Expires = DateTime.UtcNow.AddHours(8),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                Expires = DateTime.UtcNow.AddHours(expiresInHours),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key), 
+                    SecurityAlgorithms.HmacSha256Signature)
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -27,9 +43,9 @@ namespace WebApi.Application.Services
 
             return new
             {
-                token = tokenString
+                token = tokenString,
+                expiresIn = $"{expiresInHours} hours"
             };
-
         }
     }
 }

@@ -1,147 +1,72 @@
-using Asp.Versioning;
-using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Application.Services;
-using WebApi.Application.ViewModel;
+using WebApi.Domain.Model.UserAggregate;
 
 namespace WebApi.Controllers.v1
 {
     [ApiVersion(1.0)]
     [ApiController]
     [Route("api/v{version:apiVersion}/auth")]
-    [Produces("application/json")]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
-        private readonly ILogger<AuthController> _logger;
+        private readonly IUserRepository _userRepository;
+        private readonly TokenService _tokenService;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(IUserRepository userRepository, TokenService tokenService)
         {
-            _authService = authService;
-            _logger = logger;
+            _userRepository = userRepository;
+            _tokenService = tokenService;
         }
 
-        /// <summary>
-        /// Registra um novo usuário
-        /// </summary>
-        /// <param name="model">Dados do usuário</param>
-        /// <returns>Status do registro</returns>
-        [HttpPost("register")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var result = await _authService.RegisterAsync(model);
-                if (!result)
-                    return BadRequest("Nome de usuário ou email já existe");
-
-                return Ok("Usuário registrado com sucesso");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao registrar usuário");
-                return StatusCode(500, "Erro interno ao processar a requisição");
-            }
-        }
-
-        /// <summary>
-        /// Realiza login do usuário
-        /// </summary>
-        /// <param name="model">Credenciais do usuário</param>
-        /// <returns>Token de acesso e refresh token</returns>
         [HttpPost("login")]
-        [ProducesResponseType(typeof(AuthResponseViewModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Login([FromBody] LoginViewModel model)
+        public IActionResult Login([FromBody] LoginRequest request)
         {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest("Username e password são obrigatórios");
 
-                var (success, token, refreshToken) = await _authService.AuthenticateAsync(model);
-                if (!success)
-                    return Unauthorized("Usuário ou senha inválidos");
+            var user = _userRepository.GetByUsername(request.Username);
+            if (user == null)
+                return Unauthorized("Credenciais inválidas");
 
-                return Ok(new AuthResponseViewModel
-                {
-                    Token = token,
-                    RefreshToken = refreshToken
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao realizar login");
-                return StatusCode(500, "Erro interno ao processar a requisição");
-            }
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+                return Unauthorized("Credenciais inválidas");
+
+            var token = _tokenService.GenerateToken(user);
+            return Ok(token);
         }
 
-        /// <summary>
-        /// Renova o token de acesso usando refresh token
-        /// </summary>
-        /// <param name="model">Token e refresh token atuais</param>
-        /// <returns>Novo token de acesso e refresh token</returns>
-        [HttpPost("refresh-token")]
-        [ProducesResponseType(typeof(AuthResponseViewModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenViewModel model)
+        [HttpPost("register")]
+        public IActionResult Register([FromBody] RegisterRequest request)
         {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest("Username e password são obrigatórios");
 
-                var (success, token, refreshToken) = await _authService.RefreshTokenAsync(model.Token, model.RefreshToken);
-                if (!success)
-                    return Unauthorized("Token inválido ou expirado");
+            if (request.Password.Length < 6)
+                return BadRequest("Password deve ter no mínimo 6 caracteres");
 
-                return Ok(new AuthResponseViewModel
-                {
-                    Token = token,
-                    RefreshToken = refreshToken
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao renovar token");
-                return StatusCode(500, "Erro interno ao processar a requisição");
-            }
+            if (_userRepository.UsernameExists(request.Username))
+                return Conflict("Username já existe");
+
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            var user = new User(request.Username, passwordHash, request.Role);
+            
+            _userRepository.Add(user);
+
+            return Created("", new { message = "Usuário criado com sucesso" });
         }
+    }
 
-        /// <summary>
-        /// Revoga o refresh token do usuário
-        /// </summary>
-        /// <returns>Status da operação</returns>
-        [Authorize]
-        [HttpPost("revoke")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Revoke()
-        {
-            try
-            {
-                var username = User.Identity?.Name;
-                if (string.IsNullOrEmpty(username))
-                    return Unauthorized();
+    public class LoginRequest
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
 
-                var result = await _authService.RevokeTokenAsync(username);
-                if (!result)
-                    return BadRequest("Erro ao revogar token");
-
-                return Ok("Token revogado com sucesso");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao revogar token");
-                return StatusCode(500, "Erro interno ao processar a requisição");
-            }
-        }
+    public class RegisterRequest
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string? Role { get; set; }
     }
 }

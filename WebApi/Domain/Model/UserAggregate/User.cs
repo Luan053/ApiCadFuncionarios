@@ -8,40 +8,37 @@ namespace WebApi.Domain.Model.UserAggregate
     {
         [Key]
         public int Id { get; private set; }
-
+        
         [Required]
-        [StringLength(100)]
+        [MaxLength(100)]
         public string Username { get; private set; }
-
-        [Required]
-        [StringLength(100)]
-        public string Email { get; private set; }
-
+        
         [Required]
         public string PasswordHash { get; private set; }
+        
+        [MaxLength(50)]
+        public string? Role { get; private set; }
+        
+        public DateTime CreatedAt { get; private set; }
 
-        public string? RefreshToken { get; private set; }
-        public DateTime? RefreshTokenExpiryTime { get; private set; }
-
-        protected User() { } // For EF Core
-
-        public User(string username, string email, string passwordHash)
-        {
-            Username = username;
-            Email = email;
-            PasswordHash = passwordHash;
+        // Construtor para EF Core
+        private User() 
+        { 
+            Username = null!;
+            PasswordHash = null!;
         }
 
-        public void SetRefreshToken(string refreshToken, DateTime expiryTime)
+        public User(string username, string passwordHash, string? role = null)
         {
-            RefreshToken = refreshToken;
-            RefreshTokenExpiryTime = expiryTime;
+            Username = username ?? throw new ArgumentNullException(nameof(username));
+            PasswordHash = passwordHash ?? throw new ArgumentNullException(nameof(passwordHash));
+            Role = role;
+            CreatedAt = DateTime.UtcNow;
         }
 
-        public void ClearRefreshToken()
+        public void UpdatePassword(string newPasswordHash)
         {
-            RefreshToken = null;
-            RefreshTokenExpiryTime = null;
+            PasswordHash = newPasswordHash ?? throw new ArgumentNullException(nameof(newPasswordHash));
         }
     }
 }
