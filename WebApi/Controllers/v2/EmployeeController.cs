@@ -25,7 +25,7 @@ namespace WebApi.Controllers.v2
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost]
         public IActionResult Add([FromForm] EmployeeViewModel employeeView)
         {
@@ -39,18 +39,21 @@ namespace WebApi.Controllers.v2
             return Ok();
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost]
         [Route("{id}/download")]
         public IActionResult DownloadPhoto (int id)
         {
             var employee = _employeeRepository.Get(id);
+            if (employee == null || string.IsNullOrEmpty(employee.photo))
+                return NotFound();
+
             var dataBytes = System.IO.File.ReadAllBytes(employee.photo);
 
             return File(dataBytes, "image/png");
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet]
         public IActionResult Get(int pageNumber, int pageQuantity) 
         {
@@ -65,7 +68,7 @@ namespace WebApi.Controllers.v2
             return Ok(employees);
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet]
         [Route("{id}")]
         public IActionResult Search(int id)
@@ -76,7 +79,7 @@ namespace WebApi.Controllers.v2
         }
 
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete]
         [Route("{id}/delete")]
         public IActionResult DeleteEmployee(int id)
