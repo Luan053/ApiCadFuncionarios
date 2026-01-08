@@ -359,6 +359,9 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+# Contexto Base para Desenvolvimento de Projetos .NET
+contextoBase.md
+
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
@@ -367,3 +370,5 @@ WebApi/Storage/*.jpg
 WebApi/Storage/*.jpeg
 WebApi/Storage/*.svg
 /.idea/.idea.WebApi/.idea
+
+.idea/
