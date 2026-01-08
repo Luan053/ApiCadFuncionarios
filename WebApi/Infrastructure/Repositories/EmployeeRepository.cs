@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using WebApi.Domain.DTOs;
+﻿using WebApi.Domain.DTOs;
 using WebApi.Domain.Model.EmployeeAggregate;
+using Microsoft.Extensions.Configuration;
 
 namespace WebApi.Infrastructure.Repositories
 {
@@ -11,8 +11,8 @@ namespace WebApi.Infrastructure.Repositories
 
         public EmployeeRepository(ConnectionContext context, IConfiguration configuration)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _context = context;
+            _configuration = configuration;
         }
 
         public void Add(Employee employee)
@@ -21,29 +21,19 @@ namespace WebApi.Infrastructure.Repositories
             _context.SaveChanges();
         }
 
-        public (List<EmployeeDTO> Employees, int TotalCount) Get(int pageNumber, int pageSize)
+        public List<EmployeeDTO> Get(int pageNumber, int pageQuantity)
         {
-            var baseUrl = _configuration["BaseUrl"] ?? "http://localhost:5000";
-            var query = _context.Employees.AsNoTracking();
-            var totalCount = query.Count();
-
-            var employees = query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(e => new EmployeeDTO
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                    Age = e.Age,
-                    Photo = e.Photo,
-                    Role = e.Role,
-                    CreatedAt = e.CreatedAt,
-                    UpdatedAt = e.UpdatedAt,
-                    PhotoUrl = $"{baseUrl}/api/v1/employee/{e.Id}/photo"
-                })
+            return _context.Employees.Skip(pageNumber * pageQuantity)
+                .Take(pageQuantity)
+                .Select(b => 
+                    new EmployeeDTO()
+                    {
+                        Id = b.id,
+                        NameEmployee = b.name,
+                        Photo = b.photo,
+                        Role = b.role
+                    })
                 .ToList();
-
-            return (employees, totalCount);
         }
 
         public Employee? Get(int id)
@@ -51,30 +41,18 @@ namespace WebApi.Infrastructure.Repositories
             return _context.Employees.Find(id);
         }
 
-        public void Update(Employee employee)
-        {
-            _context.Entry(employee).State = EntityState.Modified;
-            _context.SaveChanges();
-        }
+        
 
         public void Delete(int id)
         {
-            var employee = _context.Employees.Find(id);
-            if (employee != null)
+            var employeeToDelete = _context.Employees.FirstOrDefault(e => e.id == id);
+            if (employeeToDelete != null)
             {
-                _context.Employees.Remove(employee);
+                _context.Employees.Remove(employeeToDelete);
                 _context.SaveChanges();
             }
         }
 
-        public bool Exists(int id)
-        {
-            return _context.Employees.Any(e => e.Id == id);
-        }
 
-        public async Task<bool> SaveChangesAsync()
-        {
-            return await _context.SaveChangesAsync() > 0;
-        }
     }
 }
